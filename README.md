@@ -35,11 +35,16 @@ Pipeline principal:
 - Redução de dimensionalidade: `PCA(n_components=40)` em alguns modelos.
 - Validação: `StratifiedGroupKFold` (agrupando por `interprete`) com métrica principal `F1-macro`.
 
-Modelos avaliados e resultados (F1-macro no teste entre intérpretes):
-- Random Forest (300 árvores, `max_depth=20`, `min_samples_split=10`): ≈ **0,496**
-- MLP (pipeline com PCA): ≈ **0,469**
-- MLP (treino com early stopping usando validação por intérprete): ≈ **0,399**
-- K-NN (k=3, `weights=distance`, métrica Manhattan): ≈ **0,397**
+Modelos avaliados e resultados (atual):
+- Random Forest (PCA 40, 300 árvores, `max_depth=20`, `min_samples_split=10`)
+  - F1-macro CV (StratifiedGroupKFold): **0,3917**
+  - F1-macro teste (intérpretes ['Dannubia','Cecilia']): **0,5077**
+- K-NN (PCA 70, `n_neighbors=200`, `metric='manhattan'`, `weights='uniform'`)
+  - F1-macro CV: **0,3108** | Teste: **0,3577** | Acurácia: **0,3795**
+- MLP (PCA 40)
+  - F1-macro CV: **0,4273**
+- MLP com early stopping (val intérprete 'Jackeline', camadas (128, 64), alpha=1e-3, PCA 40)
+  - F1-macro validação: **0,7010** | F1-macro teste: **0,4205** | Acurácia: **0,4120**
 
 Outras saídas disponíveis no notebook:
 - Relatórios de classificação detalhados por classe e matrizes de confusão.
@@ -55,13 +60,14 @@ Observações:
 Preparação e visualização:
 - `SimpleImputer(mean)` + `StandardScaler` sobre as features numéricas (sem o rótulo `sinal`).
 - Projeções 2D para inspeção visual: **PCA**, **t-SNE** e **UMAP** (opcional, instalado via `umap-learn`).
+- Tamanho após preparo: `X_scaled` com **(9960, 80)** atributos; **25** classes reais usadas apenas para avaliação externa.
 
 K-means e escolha de K:
 - Curva do cotovelo (inércia) e `silhouette` ao varrer K.
 - Heurística do cotovelo sugeriu `K ≈ 12` (para referência; pode-se também fixar K=25 para comparar com o número de classes reais).
 
 Modelos e avaliação:
-- K-means (K do cotovelo) e Agglomerative Clustering (linkages `ward` e `average`).
+- K-means (K do cotovelo, K=12) e Agglomerative Clustering (linkages `ward` e `average`, K=12).
 - Métricas internas: `silhouette`, `calinski_harabasz`, `davies_bouldin`.
 - Métricas externas (apenas para análise, usando rótulos reais): `ARI`, `NMI`, `homogeneity`, `completeness`, `v-measure` e **purity** (implementada no notebook).
 - Plots dos clusters nas projeções (cores por cluster) e das classes (cores por rótulo) para contraste visual.
